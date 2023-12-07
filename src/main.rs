@@ -42,7 +42,9 @@ fn main() {
 
 #[derive(Default)]
 struct MyEguiApp {
-   showslide:bool
+   showslide:bool,
+   editte:String,
+   texts:String
 }
 
 impl MyEguiApp {
@@ -50,6 +52,8 @@ impl MyEguiApp {
        
        Self {
         showslide:false,
+        editte:String::new(),
+        texts:String::new(),
        };
 
         Self::default()
@@ -68,7 +72,16 @@ impl eframe::App for MyEguiApp {
                 ui.label(RichText::new("A self hosted password manager for linux. Free and open source").color(Color32::WHITE))
             });
 
+            ui.text_edit_singleline(& mut self.editte);
+            if ui.button("cick to submit").clicked() {
+               self.texts+=&self.editte;
+               
+            }
 
+            ui.label(&self.texts)
+            
+
+            
         });
 
     }

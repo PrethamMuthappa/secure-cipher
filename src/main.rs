@@ -1,5 +1,8 @@
+
 use eframe::{egui, HardwareAcceleration, Theme};
+#[allow(unused_imports)]
 use egui::{Color32, FontId, Id, Layout, RichText, Sense, Vec2, Pos2, vec2, Align};
+
 fn main() {
     let nativeoption = eframe::NativeOptions {
         always_on_top: false,
@@ -41,12 +44,14 @@ fn main() {
 }
 
 #[derive(Default)]
+#[allow(dead_code)]
 struct MyEguiApp {
    showslide:bool,
    editte:String,
    texts:String
 }
 
+#[allow(unused_variables)]
 impl MyEguiApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
        
@@ -61,7 +66,7 @@ impl MyEguiApp {
 }
 
 impl eframe::App for MyEguiApp {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.with_layout(Layout::top_down(Align::Center),|ui| {
                 ui.heading(RichText::new("SECURE CYPHER").color(Color32::WHITE));
@@ -72,13 +77,20 @@ impl eframe::App for MyEguiApp {
                 ui.label(RichText::new("A self hosted password manager for linux. Free and open source").color(Color32::WHITE))
             });
 
-            ui.text_edit_singleline(& mut self.editte);
+            ui.add_space(20.10);
+
+           ui.with_layout(Layout::top_down(Align::Center), |ui| {
+ 
+            ui.text_edit_multiline(& mut self.editte);
+            ui.add_space(10.0);
             if ui.button("cick to submit").clicked() {
                self.texts+=&self.editte;
                
             }
 
-            ui.label(&self.texts)
+           });
+
+         
             
 
             

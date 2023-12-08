@@ -1,7 +1,6 @@
-
 use eframe::{egui, HardwareAcceleration, Theme};
 #[allow(unused_imports)]
-use egui::{Color32, FontId, Id, Layout, RichText, Sense, Vec2, Pos2, vec2, Align};
+use egui::{vec2, Align, Color32, FontId, Id, Layout, Pos2, RichText, Sense, Vec2};
 
 fn main() {
     let nativeoption = eframe::NativeOptions {
@@ -46,20 +45,19 @@ fn main() {
 #[derive(Default)]
 #[allow(dead_code)]
 struct MyEguiApp {
-   showslide:bool,
-   editte:String,
-   texts:String
+    showslide: bool,
+    editte: String,
+    texts: String,
 }
 
 #[allow(unused_variables)]
 impl MyEguiApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
-       
-       Self {
-        showslide:false,
-        editte:String::new(),
-        texts:String::new(),
-       };
+        Self {
+            showslide: false,
+            editte: String::new(),
+            texts: String::new(),
+        };
 
         Self::default()
     }
@@ -68,33 +66,32 @@ impl MyEguiApp {
 impl eframe::App for MyEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.with_layout(Layout::top_down(Align::Center),|ui| {
+            ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.heading(RichText::new("SECURE CYPHER").color(Color32::WHITE));
             });
             ui.add_space(20.0);
-            ui.with_layout(Layout::top_down(Align::Center),|ui| {
-
-                ui.label(RichText::new("A self hosted password manager for linux. Free and open source").color(Color32::WHITE))
+            ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                ui.label(
+                    RichText::new("A self hosted password manager for linux. Free and open source")
+                        .color(Color32::WHITE),
+                )
             });
 
             ui.add_space(20.10);
 
-           ui.with_layout(Layout::top_down(Align::Center), |ui| {
- 
-            ui.text_edit_multiline(& mut self.editte);
-            ui.add_space(10.0);
-            if ui.button("cick to submit").clicked() {
-               self.texts+=&self.editte;
-               
-            }
+            ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                ui.text_edit_multiline(&mut self.editte);
+                ui.add_space(10.0);
+                if ui
+                    .button(RichText::new("Save").color(Color32::WHITE))
+                    .clicked()
+                {
+                    self.texts += &self.editte;
+                }
 
-           });
-
-         
-            
-
-            
+                ui.add_space(7.90);
+                ui.button(RichText::new("Saved Passwords").color(Color32::WHITE))
+            });
         });
-
     }
 }

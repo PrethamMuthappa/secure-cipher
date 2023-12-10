@@ -1,3 +1,4 @@
+mod db;
 use eframe::{egui, HardwareAcceleration, Theme};
 #[allow(unused_imports)]
 use egui::{vec2, Align, Color32, FontId, Id, Layout, Pos2, RichText, Sense, Vec2};
@@ -87,6 +88,10 @@ impl eframe::App for MyEguiApp {
                     .clicked()
                 {
                     self.texts += &self.editte;
+
+                    if let Err(err) = db::dbconnect() {
+                        eprintln!("{}", err);
+                    }
                 }
 
                 ui.add_space(7.90);

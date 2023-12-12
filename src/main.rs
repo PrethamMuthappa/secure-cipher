@@ -81,7 +81,7 @@ impl MyEguiApp {
 
 #[tokio::main]
 async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
-    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let uri = "mongodb+srv://ter0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
     let client = Client::with_uri_str(uri).await?;
     println!("connection established");
     let db = client.database("Secure-cypher");
@@ -99,14 +99,15 @@ async fn display() -> mongodb::error::Result<()> {
     println!("new display db");
     let db = client.database("Secure-cypher");
     let coll: Collection<Document> = db.collection("usersavedpasswords");
-    let filter = doc! {"title":""};
+    let filter = doc! {};
     let findopt = FindOptions::builder().sort(doc! {"title":1}).build();
     let mut cursor = coll.find(filter, findopt).await?;
 
-    while let Some(datas) = cursor.try_next().await? {
-        println!("titles {}", datas);
-    }
-
+   while let Some(result) = cursor.try_next().await? {
+    
+    println!("{}",result)
+}
+ 
     Ok(())
 }
 

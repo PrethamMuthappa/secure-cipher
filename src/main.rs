@@ -1,7 +1,14 @@
-mod db;
+
 use eframe::{egui, HardwareAcceleration, Theme};
 #[allow(unused_imports)]
 use egui::{vec2, Align, Color32, FontId, Id, Layout, Pos2, RichText, Sense, Vec2};
+#[allow(unused_imports)]
+use futures::future::ok;
+#[allow(unused_imports)]
+use mongodb::{
+    bson::{doc, Document},
+    Client, Collection,
+};
 
 fn main() {
     let nativeoption = eframe::NativeOptions {
@@ -45,23 +52,39 @@ fn main() {
 
 #[derive(Default)]
 #[allow(dead_code)]
-struct MyEguiApp {
+pub struct MyEguiApp {
     showslide: bool,
     editte: String,
     texts: String,
+  //  docss:mongodb::bson::Document
 }
 
 #[allow(unused_variables)]
 impl MyEguiApp {
-    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+   pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Self {
             showslide: false,
             editte: String::new(),
             texts: String::new(),
+          //  docss:doc! {"username":""},
         };
 
         Self::default()
     }
+}
+
+
+#[tokio::main]
+async fn dbconnect(vars:String) -> mongodb::error::Result<()>{
+    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let client = Client::with_uri_str(uri).await?;
+    println!("connection established");
+    let db = client.database("Secure-cypher");
+    let coll: Collection<Document> = db.collection("usersavedpasswords");
+    let docs = doc! {"title":vars};
+    //coll.insert_one(MyEguiApp:new().docs, None).await?;
+    println!("data inserted");
+    Ok(())
 }
 
 impl eframe::App for MyEguiApp {
@@ -89,7 +112,7 @@ impl eframe::App for MyEguiApp {
                 {
                     self.texts += &self.editte;
 
-                    if let Err(err) = db::dbconnect() {
+                    if let Err(err) = dbconnect(self.texts.clone()) {
                         eprintln!("{}", err);
                     }
                 }

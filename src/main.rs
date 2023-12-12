@@ -56,6 +56,8 @@ pub struct MyEguiApp {
     showslide: bool,
     editte: String,
     texts: String,
+    itssaved:String,
+    show:bool
   //  docss:mongodb::bson::Document
 }
 
@@ -66,6 +68,8 @@ impl MyEguiApp {
             showslide: false,
             editte: String::new(),
             texts: String::new(),
+            itssaved:String::new(),
+            show:false
           //  docss:doc! {"username":""},
         };
 
@@ -82,8 +86,8 @@ async fn dbconnect(vars:String) -> mongodb::error::Result<()>{
     let db = client.database("Secure-cypher");
     let coll: Collection<Document> = db.collection("usersavedpasswords");
     let docs = doc! {"title":vars};
-    //coll.insert_one(MyEguiApp:new().docs, None).await?;
-    println!("data inserted");
+    coll.insert_one(docs, None).await?;
+    println!("data inserted news");
     Ok(())
 }
 
@@ -110,15 +114,34 @@ impl eframe::App for MyEguiApp {
                     .button(RichText::new("Save").color(Color32::WHITE))
                     .clicked()
                 {
-                    self.texts += &self.editte;
-
-                    if let Err(err) = dbconnect(self.texts.clone()) {
+                    
+                    if let Err(err) = dbconnect(self.editte.clone()) {
                         eprintln!("{}", err);
                     }
+                 
+                 self.itssaved="PASSWORD HAS BEEN SAVED".to_string();
+                 
                 }
 
+                ui.add_space(3.99);
+
+                ui.label(RichText::new(&self.itssaved).color(Color32::WHITE));
+
                 ui.add_space(7.90);
-                ui.button(RichText::new("Saved Passwords").color(Color32::WHITE))
+                if ui.button(RichText::new("Saved Passwords").color(Color32::WHITE)).clicked() {
+
+                    self.show=true;
+
+                };
+
+                if self.show==true {
+
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                            ui.heading(RichText::new("MY PASSWORDS").color(Color32::WHITE));
+                        })
+                    });
+                }
             });
         });
     }

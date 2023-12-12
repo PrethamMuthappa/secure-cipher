@@ -91,6 +91,17 @@ async fn dbconnect(vars:String) -> mongodb::error::Result<()>{
     Ok(())
 }
 
+#[tokio::main]
+async fn display() ->mongodb::error::Result<()>{
+    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let client = Client::with_uri_str(uri).await?;
+    let db = client.database("Secure-cypher");
+    let coll: Collection<Document> = db.collection("usersavedpasswords");
+    coll.find("title", None).await?;
+
+    Ok(())
+}
+
 impl eframe::App for MyEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -114,7 +125,8 @@ impl eframe::App for MyEguiApp {
                     .button(RichText::new("Save").color(Color32::WHITE))
                     .clicked()
                 {
-                    
+                     
+
                     if let Err(err) = dbconnect(self.editte.clone()) {
                         eprintln!("{}", err);
                     }
@@ -141,7 +153,7 @@ impl eframe::App for MyEguiApp {
                             ui.heading(RichText::new("MY PASSWORDS").color(Color32::WHITE));
                         })
                     });
-                }
+                };
             });
         });
     }

@@ -80,7 +80,7 @@ impl MyEguiApp {
 
 #[tokio::main]
 async fn dbconnect(vars:String) -> mongodb::error::Result<()>{
-    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let uri = "mongodb+srv://cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
     let client = Client::with_uri_str(uri).await?;
     println!("connection established");
     let db = client.database("Secure-cypher");
@@ -93,12 +93,14 @@ async fn dbconnect(vars:String) -> mongodb::error::Result<()>{
 
 #[tokio::main]
 async fn display() ->mongodb::error::Result<()>{
-    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let uri = "mongodb+srv://cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
     let client = Client::with_uri_str(uri).await?;
+    println!("new display db");
     let db = client.database("Secure-cypher");
     let coll: Collection<Document> = db.collection("usersavedpasswords");
-    coll.find("title", None).await?;
-
+    
+   
+    
     Ok(())
 }
 
@@ -115,7 +117,6 @@ impl eframe::App for MyEguiApp {
                         .color(Color32::WHITE),
                 )
             });
-
             ui.add_space(20.10);
 
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
@@ -125,27 +126,20 @@ impl eframe::App for MyEguiApp {
                     .button(RichText::new("Save").color(Color32::WHITE))
                     .clicked()
                 {
-                     
-
                     if let Err(err) = dbconnect(self.editte.clone()) {
                         eprintln!("{}", err);
-                    }
-                 
+                    }  
                  self.itssaved="PASSWORD HAS BEEN SAVED".to_string();
                  
                 }
-
                 ui.add_space(3.99);
-
                 ui.label(RichText::new(&self.itssaved).color(Color32::WHITE));
-
                 ui.add_space(7.90);
                 if ui.button(RichText::new("Saved Passwords").color(Color32::WHITE)).clicked() {
 
                     self.show=true;
 
                 };
-
                 if self.show==true {
 
                     egui::CentralPanel::default().show(ctx, |ui| {

@@ -1,12 +1,13 @@
-
 use eframe::{egui, HardwareAcceleration, Theme};
 #[allow(unused_imports)]
 use egui::{vec2, Align, Color32, FontId, Id, Layout, Pos2, RichText, Sense, Vec2};
 #[allow(unused_imports)]
 use futures::future::ok;
+use futures::stream::TryStreamExt;
 #[allow(unused_imports)]
 use mongodb::{
     bson::{doc, Document},
+    options::FindOptions,
     Client, Collection,
 };
 
@@ -56,31 +57,31 @@ pub struct MyEguiApp {
     showslide: bool,
     editte: String,
     texts: String,
-    itssaved:String,
-    show:bool
-  //  docss:mongodb::bson::Document
+    itssaved: String,
+    show: bool,
+    disp: bool,
+    //  docss:mongodb::bson::Document
 }
 
 #[allow(unused_variables)]
 impl MyEguiApp {
-   pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Self {
             showslide: false,
             editte: String::new(),
             texts: String::new(),
-            itssaved:String::new(),
-            show:false
-          //  docss:doc! {"username":""},
+            itssaved: String::new(),
+            show: false, //  docss:doc! {"username":""},
+            disp: false,
         };
 
         Self::default()
     }
 }
 
-
 #[tokio::main]
-async fn dbconnect(vars:String) -> mongodb::error::Result<()>{
-    let uri = "mongodb+srv://cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
+    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
     let client = Client::with_uri_str(uri).await?;
     println!("connection established");
     let db = client.database("Secure-cypher");
@@ -92,15 +93,20 @@ async fn dbconnect(vars:String) -> mongodb::error::Result<()>{
 }
 
 #[tokio::main]
-async fn display() ->mongodb::error::Result<()>{
-    let uri = "mongodb+srv://cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+async fn display() -> mongodb::error::Result<()> {
+    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
     let client = Client::with_uri_str(uri).await?;
     println!("new display db");
     let db = client.database("Secure-cypher");
     let coll: Collection<Document> = db.collection("usersavedpasswords");
-    
-   
-    
+    let filter = doc! {"title":""};
+    let findopt = FindOptions::builder().sort(doc! {"title":1}).build();
+    let mut cursor = coll.find(filter, findopt).await?;
+
+    while let Some(datas) = cursor.try_next().await? {
+        println!("titles {}", datas);
+    }
+
     Ok(())
 }
 
@@ -128,24 +134,30 @@ impl eframe::App for MyEguiApp {
                 {
                     if let Err(err) = dbconnect(self.editte.clone()) {
                         eprintln!("{}", err);
-                    }  
-                 self.itssaved="PASSWORD HAS BEEN SAVED".to_string();
-                 
+                    }
+                    self.itssaved = "PASSWORD HAS BEEN SAVED".to_string();
                 }
                 ui.add_space(3.99);
                 ui.label(RichText::new(&self.itssaved).color(Color32::WHITE));
                 ui.add_space(7.90);
-                if ui.button(RichText::new("Saved Passwords").color(Color32::WHITE)).clicked() {
-
-                    self.show=true;
-
+                if ui
+                    .button(RichText::new("Saved Passwords").color(Color32::WHITE))
+                    .clicked()
+                {
+                    self.show = true;
                 };
-                if self.show==true {
-
+                if self.show == true {
                     egui::CentralPanel::default().show(ctx, |ui| {
                         ui.with_layout(Layout::top_down(Align::Center), |ui| {
                             ui.heading(RichText::new("MY PASSWORDS").color(Color32::WHITE));
-                        })
+                            self.disp = true;
+                        });
+
+                        if self.disp == true {
+                            if let Err(err) = display() {
+                                eprintln!("{}", err);
+                            }
+                        }
                     });
                 };
             });

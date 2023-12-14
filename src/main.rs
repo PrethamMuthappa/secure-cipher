@@ -1,6 +1,8 @@
 use eframe::{egui, HardwareAcceleration, Theme};
 #[allow(unused_imports)]
 use egui::{vec2, Align, Color32, FontId, Id, Layout, Pos2, RichText, Sense, Vec2};
+use egui::{Ui, Widget};
+use egui_extras::{Column, TableBuilder};
 #[allow(unused_imports)]
 use futures::future::ok;
 use futures::stream::TryStreamExt;
@@ -10,6 +12,8 @@ use mongodb::{
     options::FindOptions,
     Client, Collection,
 };
+use serde::Serialize;
+use serde_json::Error;
 
 fn main() {
     let nativeoption = eframe::NativeOptions {
@@ -60,7 +64,7 @@ pub struct MyEguiApp {
     itssaved: String,
     show: bool,
     disp: bool,
-    //  docss:mongodb::bson::Document
+    resultdisplay: String, //  docss:mongodb::bson::Document
 }
 
 #[allow(unused_variables)]
@@ -73,6 +77,7 @@ impl MyEguiApp {
             itssaved: String::new(),
             show: false, //  docss:doc! {"username":""},
             disp: false,
+            resultdisplay: String::new(),
         };
 
         Self::default()
@@ -81,7 +86,7 @@ impl MyEguiApp {
 
 #[tokio::main]
 async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
-    let uri = "mongodb+srv://ter0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
     let client = Client::with_uri_str(uri).await?;
     println!("connection established");
     let db = client.database("Secure-cypher");
@@ -92,23 +97,32 @@ async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
     Ok(())
 }
 
-#[tokio::main]
-async fn display() -> mongodb::error::Result<()> {
-    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
-    let client = Client::with_uri_str(uri).await?;
-    println!("new display db");
-    let db = client.database("Secure-cypher");
-    let coll: Collection<Document> = db.collection("usersavedpasswords");
-    let filter = doc! {};
-    let findopt = FindOptions::builder().sort(doc! {"title":1}).build();
-    let mut cursor = coll.find(filter, findopt).await?;
+impl MyEguiApp {
+    #[tokio::main]
+    pub async fn display(&mut self) -> mongodb::error::Result<()> {
+        let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+        let client = Client::with_uri_str(uri).await?;
+        println!("new display db");
+        let db = client.database("Secure-cypher");
+        let coll: Collection<Document> = db.collection("usersavedpasswords");
+        let filter = doc! {};
+        let findopt = FindOptions::builder().sort(doc! {"title":1}).build();
+        let mut cursor = coll.find(filter, findopt).await?;
+        while let Some(abcd) = cursor.try_next().await? {
+            let result: Result<String, Error> = serde_json::to_string(&abcd);
+            match result {
+                Ok(json_string) => {
+                    self.resultdisplay += &json_string;
+                }
+                Err(error) => {
+                    eprintln!("error {}", error)
+                }
+            }
+            println!("{}", abcd)
+        }
 
-   while let Some(result) = cursor.try_next().await? {
-    
-    println!("{}",result)
-}
- 
-    Ok(())
+        Ok(())
+    }
 }
 
 impl eframe::App for MyEguiApp {
@@ -155,10 +169,12 @@ impl eframe::App for MyEguiApp {
                         });
 
                         if self.disp == true {
-                            if let Err(err) = display() {
+                            if let Err(err) = MyEguiApp::display(self) {
                                 eprintln!("{}", err);
                             }
                         }
+                        ui.label("display passwords");
+                        ui.label(&self.resultdisplay)
                     });
                 };
             });

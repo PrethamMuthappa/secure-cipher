@@ -86,7 +86,7 @@ impl MyEguiApp {
 
 #[tokio::main]
 async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
-    let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let uri = "mongodb+srv://precluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
     let client = Client::with_uri_str(uri).await?;
     println!("connection established");
     let db = client.database("Secure-cypher");
@@ -100,15 +100,21 @@ async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
 impl MyEguiApp {
     #[tokio::main]
     pub async fn display(&mut self) -> mongodb::error::Result<()> {
-        let uri = "mongodb+srv://@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+        let uri = "mongodb+srv://19@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
         let client = Client::with_uri_str(uri).await?;
         println!("new display db");
         let db = client.database("Secure-cypher");
         let coll: Collection<Document> = db.collection("usersavedpasswords");
         let filter = doc! {};
-        let findopt = FindOptions::builder().sort(doc! {"title":1}).build();
+        let projection = doc! {"_id":0};
+        let findopt = FindOptions::builder()
+            .sort(doc! {"title":1})
+            .projection(projection)
+            .build();
         let mut cursor = coll.find(filter, findopt).await?;
         while let Some(abcd) = cursor.try_next().await? {
+            let title = abcd.get_str("title").unwrap_or("title not found");
+            println!("title:{}", title);
             let result: Result<String, Error> = serde_json::to_string(&abcd);
             match result {
                 Ok(json_string) => {

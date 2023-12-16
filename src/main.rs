@@ -11,7 +11,7 @@ use mongodb::{
     options::FindOptions,
     Client, Collection,
 };
-use serde::Serialize;
+
 use serde_json::Error;
 
 fn main() {
@@ -64,7 +64,7 @@ pub struct MyEguiApp {
     itssaved: String,
     show: bool,
     disp: bool,
-    resultdisplay: String, //  docss:mongodb::bson::Document
+    resultdisplay: String,
 }
 
 #[allow(unused_variables)]
@@ -75,7 +75,7 @@ impl MyEguiApp {
             editte: String::new(),
             texts: String::new(),
             itssaved: String::new(),
-            show: false, //  docss:doc! {"username":""},
+            show: false,
             disp: false,
             resultdisplay: String::new(),
         };
@@ -93,7 +93,7 @@ async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
     let coll: Collection<Document> = db.collection("usersavedpasswords");
     let docs = doc! {"mypass":vars};
     coll.insert_one(docs, None).await?;
-    println!("data inserted news");
+    println!("your password has been saved");
     Ok(())
 }
 
@@ -170,6 +170,7 @@ impl eframe::App for MyEguiApp {
                     egui::CentralPanel::default().show(ctx, |ui| {
                         ui.with_layout(Layout::top_down(Align::Center), |ui| {
                             ui.heading(RichText::new("MY PASSWORDS").color(Color32::WHITE));
+                            ui.separator();
                             self.disp = true;
                         });
 
@@ -179,6 +180,7 @@ impl eframe::App for MyEguiApp {
                             }
                         }
                         ui.label(RichText::new("Display password").color(Color32::WHITE));
+                        ui.add_space(9.0);
                         ui.label(RichText::new(&self.resultdisplay).color(Color32::WHITE))
                     });
                 };

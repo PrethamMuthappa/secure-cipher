@@ -1,8 +1,7 @@
+use dotenv::dotenv;
 use eframe::{egui, HardwareAcceleration, Theme};
 #[allow(unused_imports)]
 use egui::{vec2, Align, Color32, FontId, Id, Layout, Pos2, RichText, Sense, Vec2};
-use egui::{Ui, Widget};
-use egui_extras::{Column, TableBuilder};
 #[allow(unused_imports)]
 use futures::future::ok;
 use futures::stream::TryStreamExt;
@@ -16,6 +15,7 @@ use serde::Serialize;
 use serde_json::Error;
 
 fn main() {
+    dotenv().ok();
     let nativeoption = eframe::NativeOptions {
         always_on_top: false,
         maximized: false,
@@ -86,12 +86,12 @@ impl MyEguiApp {
 
 #[tokio::main]
 async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
-    let uri = "mongodb+srv://precluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+    let uri = std::env::var("URL").expect("no url found");
     let client = Client::with_uri_str(uri).await?;
     println!("connection established");
     let db = client.database("Secure-cypher");
     let coll: Collection<Document> = db.collection("usersavedpasswords");
-    let docs = doc! {"title":vars};
+    let docs = doc! {"mypass":vars};
     coll.insert_one(docs, None).await?;
     println!("data inserted news");
     Ok(())
@@ -100,7 +100,7 @@ async fn dbconnect(vars: String) -> mongodb::error::Result<()> {
 impl MyEguiApp {
     #[tokio::main]
     pub async fn display(&mut self) -> mongodb::error::Result<()> {
-        let uri = "mongodb+srv://19@cluster0.2rcpjkw.mongodb.net/?retryWrites=true&w=majority";
+        let uri = std::env::var("URL").expect("no url found");
         let client = Client::with_uri_str(uri).await?;
         println!("new display db");
         let db = client.database("Secure-cypher");
@@ -108,17 +108,16 @@ impl MyEguiApp {
         let filter = doc! {};
         let projection = doc! {"_id":0};
         let findopt = FindOptions::builder()
-            .sort(doc! {"title":1})
+            .sort(doc! {"mypass":1})
             .projection(projection)
             .build();
         let mut cursor = coll.find(filter, findopt).await?;
         while let Some(abcd) = cursor.try_next().await? {
-            let title = abcd.get_str("title").unwrap_or("title not found");
-            println!("title:{}", title);
             let result: Result<String, Error> = serde_json::to_string(&abcd);
             match result {
                 Ok(json_string) => {
                     self.resultdisplay += &json_string;
+                    self.resultdisplay += "\n";
                 }
                 Err(error) => {
                     eprintln!("error {}", error)
@@ -179,8 +178,8 @@ impl eframe::App for MyEguiApp {
                                 eprintln!("{}", err);
                             }
                         }
-                        ui.label("display passwords");
-                        ui.label(&self.resultdisplay)
+                        ui.label(RichText::new("Display password").color(Color32::WHITE));
+                        ui.label(RichText::new(&self.resultdisplay).color(Color32::WHITE))
                     });
                 };
             });

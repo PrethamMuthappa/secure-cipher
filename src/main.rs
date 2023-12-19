@@ -1,17 +1,12 @@
 use dotenv::dotenv;
 use eframe::{egui, HardwareAcceleration, Theme};
-#[allow(unused_imports)]
-use egui::{vec2, Align, Color32, FontId, Id, Layout, Pos2, RichText, Sense, Vec2};
-#[allow(unused_imports)]
-use futures::future::ok;
+use egui::{Align, Color32, Layout, RichText, Vec2};
 use futures::stream::TryStreamExt;
-#[allow(unused_imports)]
 use mongodb::{
     bson::{doc, Document},
     options::FindOptions,
     Client, Collection,
 };
-
 use serde_json::Error;
 
 fn main() {
@@ -55,28 +50,25 @@ fn main() {
     .expect("error")
 }
 
-#[derive(Default)]
 #[allow(dead_code)]
+#[derive(Default)]
 pub struct MyEguiApp {
     showslide: bool,
     editte: String,
     texts: String,
     itssaved: String,
     show: bool,
-    disp: bool,
     resultdisplay: String,
 }
 
-#[allow(unused_variables)]
 impl MyEguiApp {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         Self {
             showslide: false,
             editte: String::new(),
             texts: String::new(),
             itssaved: String::new(),
             show: false,
-            disp: false,
             resultdisplay: String::new(),
         };
 
@@ -171,13 +163,10 @@ impl eframe::App for MyEguiApp {
                         ui.with_layout(Layout::top_down(Align::Center), |ui| {
                             ui.heading(RichText::new("MY PASSWORDS").color(Color32::WHITE));
                             ui.separator();
-                            self.disp = true;
                         });
 
-                        if self.disp == true {
-                            if let Err(err) = MyEguiApp::display(self) {
-                                eprintln!("{}", err);
-                            }
+                        if let Err(err) = MyEguiApp::display(self) {
+                            eprintln!("{}", err);
                         }
                         ui.label(RichText::new("Display password").color(Color32::WHITE));
                         ui.add_space(9.0);
